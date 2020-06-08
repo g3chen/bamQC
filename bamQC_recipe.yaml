@@ -33,32 +33,6 @@
   system_depends:
   - name: libncurses5-dev
 
-# java/8
-- name: java
-  version: 8
-  build_type: extract
-  build_args:
-    prereq_args:
-      sha256: 4ee3b37cb70fe1dbfad0ef449fe2c5fec43d81bd37ef0a65ec9f65afac190b4f
-      url: https://github.com/AdoptOpenJDK/openjdk8-upstream-binaries/releases/download/jdk8u222-b10/OpenJDK8U-jdk_x64_linux_8u222b10.tar.gz
-    prereq_type: download
-  system_depends:
-    - name: libfontconfig1-dev
-
-# picard/2.21.2
-- name: picard
-  version: 2.21.2
-  build_type: copy
-  build_args:
-    prereq_args:
-      sha256: 89be6d0fec5e4bf0a82db0aa17728e5f15d13456dcf9e7f75dd3af9901895700
-      url: https://github.com/broadinstitute/picard/releases/download/2.21.2/picard.jar
-    prereq_type: download
-    to: 'picard.jar'
-  depends:
-    - name: java
-      version: 8
-
 # python/3.6
 - name: python
   version: 3.6
@@ -108,4 +82,59 @@
   - name: libffi-dev
   - name: tk8.6-dev
 
+# bedtools/2.27
+- name: bedtools
+  version: 2.27
+  build_type: make
+  build_args:
+    prereq_args:
+      prereq_args:
+        sha256: f1c468c9dbd82a5c13f51c1df1fffd5ea736901cfc0ec9fb9c428d085390823d
+        url: http://deb.debian.org/debian/pool/main/b/bedtools/bedtools_2.27.1+dfsg.orig.tar.xz
+      prereq_type: download
+    prereq_type: extract
+
 # bam-qc-metrics/0.2.5
+- name: bam-qc-metrics
+  version: 0.2.5
+  build_type: pip_file
+  build_args:
+    prereq_type: git
+    prereq_args:
+      url: https://github.com/oicr-gsi/bam-qc-metrics.git
+      tag: v0.2.5
+  depends:
+  - name: htslib
+    version: 1.9
+  - name: python
+    version: 3.6
+  - name: samtools
+    version: 1.9
+  - name: bedtools
+    version: 2.27
+
+# java/8
+- name: java
+  version: 8
+  build_type: extract
+  build_args:
+    prereq_args:
+      sha256: 4ee3b37cb70fe1dbfad0ef449fe2c5fec43d81bd37ef0a65ec9f65afac190b4f
+      url: https://github.com/AdoptOpenJDK/openjdk8-upstream-binaries/releases/download/jdk8u222-b10/OpenJDK8U-jdk_x64_linux_8u222b10.tar.gz
+    prereq_type: download
+  system_depends:
+    - name: libfontconfig1-dev
+
+# picard/2.21.2
+- name: picard
+  version: 2.21.2
+  build_type: copy
+  build_args:
+    prereq_args:
+      sha256: 89be6d0fec5e4bf0a82db0aa17728e5f15d13456dcf9e7f75dd3af9901895700
+      url: https://github.com/broadinstitute/picard/releases/download/2.21.2/picard.jar
+    prereq_type: download
+    to: 'picard.jar'
+  depends:
+    - name: java
+      version: 8
