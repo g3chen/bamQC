@@ -1,3 +1,14 @@
+# mosdepth/0.2.9
+- name: mosdepth
+  version: 0.2.9
+  build_type: copy
+  build_args:
+    prereq_type: download
+    prereq_args:
+      url: https://github.com/brentp/mosdepth/releases/download/v0.2.9/mosdepth
+      sha256: a73283fb1a7465601a4d2d738f6f832f2fd84bf9181e0d4d2b91453da385177c
+    to: bin/mosdepth
+
 # htslib/1.9
 - name: htslib
   version: 1.9
