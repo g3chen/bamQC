@@ -6,18 +6,21 @@ workflow bamQC {
 	File bamFile
 	Map[String, String] metadata
 	String outputFileNamePrefix = "bamQC"
+	String docker = "g3chen/bamqc:1.0"
     }
 
     parameter_meta {
 	bamFile: "Input BAM file on which to compute QC metrics"
 	metadata: "JSON file containing metadata"
 	outputFileNamePrefix: "Prefix for output files"
+	docker: "Docker container to run the workflow in"
     }
 
     call filter {
 	input:
 	bamFile = bamFile,
-	outputFileNamePrefix = outputFileNamePrefix
+	outputFileNamePrefix = outputFileNamePrefix,
+	docker = docker
     }
 
     call updateMetadata {
@@ -27,29 +30,34 @@ workflow bamQC {
 	totalInputReads = filter.totalInputReads,
 	nonPrimaryReads = filter.nonPrimaryReads,
 	unmappedReads = filter.unmappedReads,
-	lowQualityReads = filter.lowQualityReads
+	lowQualityReads = filter.lowQualityReads,
+	docker = docker
     }
 
     call countInputReads {
 	input:
-	bamFile = filter.filteredBam
+	bamFile = filter.filteredBam,
+	docker = docker
     }
 
     call indexBamFile {
 	input:
-	bamFile = filter.filteredBam
+	bamFile = filter.filteredBam,
+	docker = docker
     }
 
     call findDownsampleParams {
 	input:
 	outputFileNamePrefix = outputFileNamePrefix,
-	inputReads = countInputReads.result
+	inputReads = countInputReads.result,
+	docker = docker
     }
 
     call findDownsampleParamsMarkDup {
 	input:
 	outputFileNamePrefix = outputFileNamePrefix,
-	inputReads = countInputReads.result
+	inputReads = countInputReads.result,
+	docker = docker
     }
 
     Boolean ds = findDownsampleParams.status["ds"]
@@ -62,6 +70,7 @@ workflow bamQC {
 	    outputFileNamePrefix = outputFileNamePrefix,
 	    downsampleStatus = findDownsampleParams.status,
 	    downsampleTargets = findDownsampleParams.targets,
+	    docker = docker
 	}
     }
 
@@ -71,7 +80,8 @@ workflow bamQC {
 	    bamFile = filter.filteredBam,
 	    bamIndex = indexBamFile.index,
 	    outputFileNamePrefix = outputFileNamePrefix,
-	    region = findDownsampleParamsMarkDup.region
+	    region = findDownsampleParamsMarkDup.region,
+	    docker = docker
 	}
     }
 
@@ -79,7 +89,8 @@ workflow bamQC {
     call markDuplicates {
 	input:
 	bamFile = select_first(markDupInputs),
-	outputFileNamePrefix = outputFileNamePrefix
+	outputFileNamePrefix = outputFileNamePrefix,
+	docker = docker
     }
 
     call bamQCMetrics {
@@ -88,19 +99,22 @@ workflow bamQC {
 	outputFileNamePrefix = outputFileNamePrefix,
 	markDuplicates = markDuplicates.result,
 	downsampled = ds,
-	bamFileDownsampled = downsample.result
+	bamFileDownsampled = downsample.result,
+	docker = docker
     }
 
     call runMosdepth {
 	input:
 	bamFile = filter.filteredBam,
-	bamIndex = indexBamFile.index
+	bamIndex = indexBamFile.index,
+	docker = docker
     }
 
     call cumulativeDistToHistogram {
 	input:
 	globalDist = runMosdepth.globalDist,
-	summary = runMosdepth.summary
+	summary = runMosdepth.summary,
+	docker = docker
     }
 
     call collateResults {
@@ -109,6 +123,7 @@ workflow bamQC {
 	metadata = updateMetadata.result,
 	histogram = cumulativeDistToHistogram.histogram,
 	outputFileNamePrefix = outputFileNamePrefix
+	docker = docker
     }
 
     output {
@@ -161,6 +176,7 @@ task bamQCMetrics {
 	Int jobMemory = 16
 	Int threads = 4
 	Int timeout = 4
+	String docker
     }
 
     parameter_meta {
@@ -173,6 +189,7 @@ task bamQCMetrics {
 	refSizesBed: "Path to human genome BED reference with chromosome sizes"
 	workflowVersion: "Workflow version string"
 	normalInsertMax: "Maximum of expected insert size range"
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -197,6 +214,7 @@ task bamQCMetrics {
     >>>
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
@@ -226,6 +244,7 @@ task collateResults {
 	Int jobMemory = 8
 	Int threads = 4
 	Int timeout = 1
+	String docker
     }
 
     parameter_meta {
@@ -233,6 +252,7 @@ task collateResults {
 	histogram: "JSON file with coverage histogram"
 	metadata: "JSON file with additional metadata"
 	outputFileNamePrefix: "Prefix for output file"
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -240,6 +260,7 @@ task collateResults {
     }
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
@@ -282,10 +303,12 @@ task countInputReads {
 	Int jobMemory = 16
 	Int threads = 4
 	Int timeout = 4
+	String docker
     }
 
     parameter_meta {
 	bamFile: "Input BAM file of aligned data"
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -293,6 +316,7 @@ task countInputReads {
     }
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
@@ -323,11 +347,13 @@ task cumulativeDistToHistogram {
 	Int jobMemory = 8
 	Int threads = 4
 	Int timeout = 1
+	String docker
     }
 
     parameter_meta {
 	globalDist: "Global coverage distribution output from mosdepth"
 	summary: "Summary output from mosdepth"
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -392,6 +418,7 @@ task cumulativeDistToHistogram {
     >>>
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
@@ -424,6 +451,7 @@ task downsample {
 	Int jobMemory = 16
 	Int threads = 4
 	Int timeout = 4
+	String docker
     }
 
     parameter_meta {
@@ -433,6 +461,7 @@ task downsample {
 	downsampleTargets: "Map; target number of reads for pre-downsampling and downsampling"
 	downsampleSuffix: "Suffix for output file"
 	randomSeed: "Random seed for pre-downsampling (if any)"
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -466,6 +495,7 @@ task downsample {
     >>>
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
@@ -498,6 +528,7 @@ task downsampleRegion {
 	Int jobMemory = 16
 	Int threads = 4
 	Int timeout = 4
+	String docker
     }
 
     parameter_meta {
@@ -505,6 +536,7 @@ task downsampleRegion {
 	bamIndex: "BAM index file in BAI format"
 	outputFileNamePrefix: "Prefix for output file"
 	region: "Region argument for samtools"
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -525,6 +557,7 @@ task downsampleRegion {
     >>>
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
@@ -557,12 +590,14 @@ task filter {
 	Int jobMemory = 16
 	Int threads = 4
 	Int timeout = 4
+	String docker
     }
 
     parameter_meta {
 	bamFile: "Input BAM file of aligned rnaSeqQC data"
 	outputFileNamePrefix: "Prefix for output file"
 	minQuality: "Minimum alignment quality to pass filter"
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -595,6 +630,7 @@ task filter {
     >>>
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
@@ -636,6 +672,7 @@ task findDownsampleParams {
 	Int jobMemory = 16
 	Int threads = 4
 	Int timeout = 4
+	String docker
     }
 
     String statusFile = "status.json"
@@ -649,6 +686,7 @@ task findDownsampleParams {
 	minReadsRelative: "Minimum value of (inputReads)/(targetReads) to allow pre-downsampling"
 	precision: "Number of decimal places in fraction for pre-downsampling"
 	preDSMultiplier: "Determines target size for pre-downsampled set (if any). Must have (preDSMultiplier) < (minReadsRelative)."
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -713,6 +751,7 @@ task findDownsampleParams {
     >>>
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
@@ -836,10 +875,12 @@ task indexBamFile {
 	Int jobMemory = 16
 	Int threads = 4
 	Int timeout = 4
+	String docker
     }
 
     parameter_meta {
 	bamFile: "Input BAM file of aligned data"
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -847,6 +888,7 @@ task indexBamFile {
     }
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
@@ -883,6 +925,7 @@ task markDuplicates {
 	Int jobMemory = 16
 	Int threads = 4
 	Int timeout = 4
+	String docker
     }
 
     # See GR-899 for opticalDuplicatePixelDistance
@@ -892,6 +935,7 @@ task markDuplicates {
 	outputFileNamePrefix: "Prefix for output file"
 	opticalDuplicatePixelDistance: "Maximum offset between optical duplicate clusters"
 	picardMaxMemMb: "Memory requirement in MB for running Picard JAR"
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -914,6 +958,7 @@ task markDuplicates {
     >>>
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
@@ -941,11 +986,13 @@ task runMosdepth {
 	Int jobMemory = 16
 	Int threads = 4
 	Int timeout = 4
+	String docker
     }
 
     parameter_meta {
 	bamFile: "Input BAM file of aligned data"
 	bamIndex: "Index file in samtools .bai format"
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -953,6 +1000,7 @@ task runMosdepth {
     }
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
@@ -999,6 +1047,7 @@ task updateMetadata {
 	Int jobMemory = 16
 	Int threads = 4
 	Int timeout = 4
+	String docker
     }
 
     parameter_meta {
@@ -1008,6 +1057,7 @@ task updateMetadata {
 	nonPrimaryReads: "Total reads excluded as non-primary"
 	unmappedReads: "Total reads excluded as unmapped"
 	lowQualityReads: "Total reads excluded as low alignment quality"
+	docker: "Docker container to run the workflow in"
 	modules: "required environment modules"
 	jobMemory: "Memory allocated for this job"
 	threads: "Requested CPU threads"
@@ -1015,6 +1065,7 @@ task updateMetadata {
     }
 
     runtime {
+    docker:  "~{docker}"
 	modules: "~{modules}"
 	memory:  "~{jobMemory} GB"
 	cpu:     "~{threads}"
