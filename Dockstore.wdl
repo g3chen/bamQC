@@ -56,8 +56,7 @@ workflow bamQC {
     call findDownsampleParamsMarkDup {
 	input:
 	outputFileNamePrefix = outputFileNamePrefix,
-	inputReads = countInputReads.result,
-	docker = docker
+	inputReads = countInputReads.result
     }
 
     Boolean ds = findDownsampleParams.status["ds"]
