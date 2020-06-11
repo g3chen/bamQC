@@ -122,7 +122,7 @@ workflow bamQC {
 	bamQCMetricsResult = bamQCMetrics.result,
 	metadata = updateMetadata.result,
 	histogram = cumulativeDistToHistogram.histogram,
-	outputFileNamePrefix = outputFileNamePrefix
+	outputFileNamePrefix = outputFileNamePrefix,
 	docker = docker
     }
 
