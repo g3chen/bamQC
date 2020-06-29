@@ -193,7 +193,9 @@ task bamQCMetrics {
 	-t ~{refSizesBed} \
 	-T . \
 	-w ~{workflowVersion} \
-	~{dsInput}
+	~{"-S " + bamFileDownsampled}
+	# Below replaced by above. Doesn't work with docker for some reason
+	#~{dsInput}
     >>>
 
     runtime {
