@@ -4,21 +4,21 @@ workflow test_location {
 
 task find_tools {
 	command {
-		ls MOSDEPTH_ROOT
+		ls $MOSDEPTH_ROOT
 		echo "@@@@@@@@@@@@@"
-		ls PICARD_ROOT
+		ls $PICARD_ROOT
 		echo "@@@@@@@@@@@@@"
-		ls JAVA_ROOT
+		ls $JAVA_ROOT
 		echo "@@@@@@@@@@@@@"
-		ls BAM_QC_METRICS_ROOT
+		ls $BAM_QC_METRICS_ROOT
 		echo "@@@@@@@@@@@@@"
-		ls BEDTOOLS_ROOT
+		ls $BEDTOOLS_ROOT
 		echo "@@@@@@@@@@@@@"
-		ls PYTHON_ROOT
+		ls $PYTHON_ROOT
 		echo "@@@@@@@@@@@@@"
-		ls SAMTOOLS_ROOT
+		ls $SAMTOOLS_ROOT
 		echo "@@@@@@@@@@@@@"
-		ls HTSLIB_ROOT
+		ls $HTSLIB_ROOT
 		echo "@@@@@@@@@@@@@"
 
 		echo $PATH
