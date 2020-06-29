@@ -167,8 +167,8 @@ task bamQCMetrics {
 	File markDuplicates
 	Boolean downsampled
 	File? bamFileDownsampled
-	String refFasta
-	String refSizesBed
+	File refFasta
+	File refSizesBed
 	String workflowVersion
 	Int normalInsertMax = 1500
 	String modules = "bam-qc-metrics/0.2.5"
@@ -195,7 +195,6 @@ task bamQCMetrics {
 	timeout: "hours before task timeout"
     }
 
-    String dsInput = if downsampled then "-S ~{bamFileDownsampled}" else ""
     String resultName = "~{outputFileNamePrefix}.metrics.json"
 
     command <<<
@@ -209,7 +208,7 @@ task bamQCMetrics {
 	-t ~{refSizesBed} \
 	-T . \
 	-w ~{workflowVersion} \
-	~{dsInput}
+	~{"-S " + bamFileDownsampled}
     >>>
 
     runtime {
