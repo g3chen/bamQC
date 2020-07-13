@@ -1,0 +1,14 @@
+{
+  "bamQC.bamQCMetrics.workflowVersion": "4.0.0_TEST",
+  "bamQC.bamFile": "/home/ubuntu/data/sample_data/bamqc/neat_5x_EX_hg19_chr21.bam",
+  "bamQC.findDownsampleParams.targetReads": 20000,
+  "bamQC.metadata": {
+		"donor": "Xenomorph",
+		"group id": "Weyland-Yutani",
+		"library design": "WY-1001",
+		"tissue origin": "LV-426",
+		"tissue type": "Claw fragment"
+	    },
+  "bamQC.bamQCMetrics.refFasta": "$HG19_ROOT/hg19_random.fa",
+  "bamQC.bamQCMetrics.refSizesBed": "$HG19_ROOT/hg19.chrom.sizes.bed"
+}
