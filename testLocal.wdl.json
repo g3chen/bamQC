@@ -9,6 +9,6 @@
 		"tissue origin": "LV-426",
 		"tissue type": "Claw fragment"
 	    },
-  "bamQC.bamQCMetrics.refFasta": "$HG19_ROOT/hg19_random.fa",
-  "bamQC.bamQCMetrics.refSizesBed": "$HG19_ROOT/hg19.chrom.sizes.bed"
+  "bamQC.bamQCMetrics.refFasta": "/data_modules/gsi/modulator/sw/data/hg19-p13/hg19_random.fa",
+  "bamQC.bamQCMetrics.refSizesBed": "/data_modules/gsi/modulator/sw/data/hg19-p13/hg19.chrom.sizes.bed"
 }
